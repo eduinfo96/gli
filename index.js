@@ -5,7 +5,9 @@ const argv = require('minimist')(process.argv.slice(2), {
     alias: {
        m: 'message',
        x: 'dry-run',
-       h: 'help'
+       h: 'help',
+       n: 'rename',
+       name: 'rename',
     }
 });
 
@@ -19,11 +21,19 @@ function fmtBranchName(message) {
   }
   return message.replace(/\s/, '/').replace(/[\s.]/g, sort).toLowerCase();
 }
+function fmtMessage(message){
+  // capitalize the first letter.
+  // check for a period.
+  if(message.slice(-1) !== '.') message += '.';
+  const newmessage = message.slice(0,1).toUpperCase() + message.slice(1);
+  return newmessage;
+}
 
 if(argv.rename) {
   if (argv.message) {
-    const branchName = fmtBranchName(argv.message)
-    !argv.x && exec(`git push origin :$(git_current_branch) && git branch -m ${branchName} && git commit --amend -m'${argv.message}' && git push origin $(git_current_branch)`,
+    const message = fmtMessage(argv.message)
+    const branchName = fmtBranchName(message)
+    !argv.x && exec(`git push origin :$(git_current_branch) && git branch -m ${branchName} && git commit --amend -m'${message}' && git push origin $(git_current_branch)`,
       (error, stdout, stderr) => {
       if (error) {
         console.error(`exec error: ${error}`);
